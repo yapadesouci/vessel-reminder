@@ -567,6 +567,69 @@
       renderDayPanel()
     }
 
+    // ── Event handlers ────────────────────────────────────────────────────────────
+    document.getElementById('calendar-grid').addEventListener('click', e => {
+      const cell = e.target.closest('.cell')
+      if (!cell) return
+      selectedDate = cell.dataset.date
+      renderCalendar()
+      renderDayPanel()
+    })
+
+    document.getElementById('prev-month').addEventListener('click', () => {
+      viewMonth--
+      if (viewMonth < 0) { viewMonth = 11; viewYear-- }
+      renderCalendar()
+    })
+    document.getElementById('next-month').addEventListener('click', () => {
+      viewMonth++
+      if (viewMonth > 11) { viewMonth = 0; viewYear++ }
+      renderCalendar()
+    })
+    document.getElementById('go-today').addEventListener('click', () => {
+      viewYear = new Date().getFullYear()
+      viewMonth = new Date().getMonth()
+      selectedDate = today
+      renderCalendar()
+      renderDayPanel()
+    })
+
+    document.getElementById('new-reminder').addEventListener('click', () => openModal())
+    document.getElementById('panel-add').addEventListener('click', () => openModal(selectedDate))
+
+    document.getElementById('day-panel-list').addEventListener('click', async e => {
+      const editId = e.target.dataset.edit
+      const deleteId = e.target.dataset.delete
+
+      if (editId) {
+        const r = reminders.find(x => x.id === editId)
+        if (r) openModal(selectedDate, r)
+      }
+      if (deleteId) {
+        reminders = reminders.filter(x => x.id !== deleteId)
+        await saveReminders(reminders)
+        renderCalendar()
+        renderDayPanel()
+      }
+    })
+
+    document.getElementById('modal-save').addEventListener('click', saveModal)
+    document.getElementById('modal-cancel').addEventListener('click', closeModal)
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeModal()
+    })
+
+    document.getElementById('swatches').addEventListener('click', e => {
+      const swatch = e.target.closest('.swatch')
+      if (!swatch) return
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'))
+      swatch.classList.add('selected')
+    })
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal()
+    })
+
     renderCalendar()
     renderDayPanel()
   </script>
