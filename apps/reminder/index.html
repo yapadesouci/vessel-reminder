@@ -343,7 +343,66 @@
   </div>
 
   <script type="module">
-    /* script content added in Task 3+ */
+    import { ready, storage, notifications } from '../../sdk/index.js'
+    await ready()
+
+    // ── Storage ──────────────────────────────────────────────────────────────────
+    async function loadReminders() {
+      return (await storage.get('reminders')) ?? []
+    }
+    async function saveReminders(list) {
+      await storage.set('reminders', list)
+    }
+
+    // ── Utilities ─────────────────────────────────────────────────────────────────
+    function uuid() {
+      return crypto.randomUUID?.() ??
+        ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16))
+    }
+
+    // Returns 'YYYY-MM-DD' for a Date object (local time)
+    function toISODate(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    }
+
+    // Floors now to nearest 5-min boundary → 'HH:MM'
+    function currentSlot() {
+      const now = new Date()
+      const m = Math.floor(now.getMinutes() / 5) * 5
+      return `${String(now.getHours()).padStart(2,'0')}:${String(m).padStart(2,'0')}`
+    }
+
+    // Returns true if reminder is due on the given ISO date string
+    function isDueOn(r, isoDate) {
+      if (r.date > isoDate) return false
+      if (r.recurrence === 'none')    return r.date === isoDate
+      if (r.recurrence === 'daily')   return true
+      if (r.recurrence === 'weekly') {
+        const base = new Date(r.date + 'T00:00:00')
+        const target = new Date(isoDate + 'T00:00:00')
+        return base.getDay() === target.getDay()
+      }
+      if (r.recurrence === 'monthly') {
+        return r.date.slice(8) === isoDate.slice(8)   // same day-of-month
+      }
+      return false
+    }
+
+    // Populate 5-min time options in the <select>
+    function populateTimeSelect() {
+      const sel = document.getElementById('f-time')
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 5) {
+          const v = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
+          const opt = document.createElement('option')
+          opt.value = v
+          opt.textContent = v
+          sel.appendChild(opt)
+        }
+      }
+    }
+    populateTimeSelect()
   </script>
 </body>
 </html>
