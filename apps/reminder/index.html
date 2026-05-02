@@ -510,6 +510,63 @@
       }
     }
 
+    // ── Modal ─────────────────────────────────────────────────────────────────────
+    function openModal(prefillDate = selectedDate, reminder = null) {
+      editingId = reminder?.id ?? null
+      document.getElementById('modal-title').textContent = reminder ? 'Edit Reminder' : 'New Reminder'
+      document.getElementById('f-title').value = reminder?.title ?? ''
+      document.getElementById('f-notes').value = reminder?.notes ?? ''
+      document.getElementById('f-date').value = reminder?.date ?? prefillDate
+      document.getElementById('f-time').value = reminder?.time ?? '09:00'
+      document.getElementById('f-recurrence').value = reminder?.recurrence ?? 'none'
+
+      const color = reminder?.color ?? 'sky'
+      document.querySelectorAll('.swatch').forEach(s => {
+        s.classList.toggle('selected', s.dataset.color === color)
+      })
+
+      document.getElementById('modal-overlay').classList.remove('hidden')
+      document.getElementById('f-title').focus()
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.add('hidden')
+      editingId = null
+    }
+
+    async function saveModal() {
+      const title = document.getElementById('f-title').value.trim()
+      if (!title) { document.getElementById('f-title').focus(); return }
+
+      const date = document.getElementById('f-date').value
+      if (!date) { document.getElementById('f-date').focus(); return }
+
+      const selectedSwatch = document.querySelector('.swatch.selected')
+      const r = {
+        id: editingId ?? uuid(),
+        title,
+        notes: document.getElementById('f-notes').value.trim(),
+        date,
+        time: document.getElementById('f-time').value,
+        recurrence: document.getElementById('f-recurrence').value,
+        color: selectedSwatch?.dataset.color ?? 'sky',
+        notifiedDates: [],
+      }
+
+      if (editingId) {
+        const existing = reminders.find(x => x.id === editingId)
+        if (existing) r.notifiedDates = existing.notifiedDates
+        reminders = reminders.map(x => x.id === editingId ? r : x)
+      } else {
+        reminders.push(r)
+      }
+
+      await saveReminders(reminders)
+      closeModal()
+      renderCalendar()
+      renderDayPanel()
+    }
+
     renderCalendar()
     renderDayPanel()
   </script>
