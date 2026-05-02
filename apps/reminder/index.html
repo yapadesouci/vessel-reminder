@@ -630,8 +630,39 @@
       if (e.key === 'Escape') closeModal()
     })
 
+    // ── Notification poller ───────────────────────────────────────────────────────
+    async function pollNotifications() {
+      const now = toISODate(new Date())
+      const slot = currentSlot()
+      const list = await loadReminders()
+      let changed = false
+
+      for (const r of list) {
+        if (!isDueOn(r, now)) continue
+        if (r.time !== slot) continue
+        if (r.notifiedDates.includes(now)) continue
+
+        await notifications.send({ title: r.title, body: r.time })
+        r.notifiedDates.push(now)
+        changed = true
+      }
+
+      if (changed) {
+        await saveReminders(list)
+        reminders = list
+      }
+    }
+
+    function startPoller() {
+      pollNotifications()
+      setInterval(pollNotifications, 5 * 60 * 1000)
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────────
+    reminders = await loadReminders()
     renderCalendar()
     renderDayPanel()
+    startPoller()
   </script>
 </body>
 </html>
