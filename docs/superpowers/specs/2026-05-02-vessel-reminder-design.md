@@ -74,7 +74,7 @@ At poll time, a reminder is considered **due today** if:
    - Clicking a day selects it and updates the day detail panel
 
 2. **Day detail panel** (below the calendar grid)
-   - Shows all reminders for the selected day, sorted by time
+   - Shows all reminders whose recurrence pattern lands on the selected day (same logic as the notification poller — not just reminders whose base `date` equals that day), sorted by time
    - Each row: time | title | recurrence badge (Daily / Weekly / Monthly / Once)
    - "＋ Add reminder" shortcut pre-fills the selected date
    - Trash icon on each row to delete
@@ -112,9 +112,9 @@ Vessel dark navy color system extracted from the host app:
 
 - `setInterval` fires every **5 minutes** (`300_000 ms`) after `await ready()`
 - On each tick:
-  1. Compute current date (`YYYY-MM-DD`) and current 5-minute time slot (`HH:M0` or `HH:M5`)
+  1. Compute current date (`YYYY-MM-DD`) and current 5-minute slot by flooring `now` to the nearest 5 minutes and formatting as `HH:MM` (e.g. a poll at 09:03 → slot `"09:00"`)
   2. Load reminders from storage
-  3. Filter reminders that are due today (per recurrence logic) AND whose `time` matches the current slot AND whose `notifiedDates` does not include today
+  3. Filter reminders that are due today (per recurrence logic) AND whose `time` string equals the current slot string AND whose `notifiedDates` does not include today
   4. For each match: call `notifications.send({ title: reminder.title, body: reminder.time })`, add today to `notifiedDates`, save updated reminders back to storage
 
 ---
