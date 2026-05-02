@@ -474,7 +474,44 @@
       }
     }
 
+    // ── Day panel renderer ────────────────────────────────────────────────────────
+    const BADGE = { daily: 'badge-daily', weekly: 'badge-weekly', monthly: 'badge-monthly', none: 'badge-none' }
+    const BADGE_LABEL = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', none: 'Once' }
+
+    function renderDayPanel() {
+      const title = document.getElementById('day-panel-title')
+      const list = document.getElementById('day-panel-list')
+
+      const d = new Date(selectedDate + 'T00:00:00')
+      const isToday = selectedDate === today
+      title.textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
+        (isToday ? ' — Today' : '')
+
+      const due = reminders
+        .filter(r => isDueOn(r, selectedDate))
+        .sort((a, b) => a.time.localeCompare(b.time))
+
+      list.innerHTML = ''
+      if (!due.length) {
+        list.innerHTML = '<div class="empty-day">No reminders for this day.</div>'
+        return
+      }
+
+      for (const r of due) {
+        const row = document.createElement('div')
+        row.className = 'reminder-row'
+        row.innerHTML = `
+          <div class="r-time">${r.time}</div>
+          <div class="r-title" data-edit="${r.id}">${r.title}</div>
+          <div class="r-badge ${BADGE[r.recurrence]}">${BADGE_LABEL[r.recurrence]}</div>
+          <button class="r-delete" data-delete="${r.id}" title="Delete">✕</button>
+        `
+        list.appendChild(row)
+      }
+    }
+
     renderCalendar()
+    renderDayPanel()
   </script>
 </body>
 </html>
