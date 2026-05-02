@@ -1,0 +1,13 @@
+{
+  "name": "vessel-reminder",
+  "version": "1.0.0",
+  "description": "A Vessel cargo — calendar reminder app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/pack.js"
+  },
+  "dependencies": {
+    "@vessel-aircodr/sdk": "^0.1.0"
+  }
+}
