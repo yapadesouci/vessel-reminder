@@ -366,13 +366,6 @@
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
     }
 
-    // Floors now to nearest 5-min boundary → 'HH:MM'
-    function currentSlot() {
-      const now = new Date()
-      const m = Math.floor(now.getMinutes() / 5) * 5
-      return `${String(now.getHours()).padStart(2,'0')}:${String(m).padStart(2,'0')}`
-    }
-
     // Returns true if reminder is due on the given ISO date string
     function isDueOn(r, isoDate) {
       if (r.date > isoDate) return false
@@ -550,18 +543,16 @@
         time: document.getElementById('f-time').value,
         recurrence: document.getElementById('f-recurrence').value,
         color: selectedSwatch?.dataset.color ?? 'sky',
-        notifiedDates: [],
       }
 
       if (editingId) {
-        const existing = reminders.find(x => x.id === editingId)
-        if (existing) r.notifiedDates = existing.notifiedDates
         reminders = reminders.map(x => x.id === editingId ? r : x)
       } else {
         reminders.push(r)
       }
 
       await saveReminders(reminders)
+      await scheduleNotifications()
       closeModal()
       renderCalendar()
       renderDayPanel()
@@ -608,6 +599,7 @@
       if (deleteId) {
         reminders = reminders.filter(x => x.id !== deleteId)
         await saveReminders(reminders)
+        await scheduleNotifications()
         renderCalendar()
         renderDayPanel()
       }
@@ -630,39 +622,40 @@
       if (e.key === 'Escape') closeModal()
     })
 
-    // ── Notification poller ───────────────────────────────────────────────────────
-    async function pollNotifications() {
-      const now = toISODate(new Date())
-      const slot = currentSlot()
-      const list = await loadReminders()
-      let changed = false
+    // ── Notification scheduler ────────────────────────────────────────────────────
+    // Computes upcoming fire timestamps for all reminders within the next 7 days
+    // and registers them with the main process (Node.js timers, not throttled).
+    function computeScheduleItems(list) {
+      const items = []
+      const now = new Date()
 
-      for (const r of list) {
-        if (!isDueOn(r, now)) continue
-        if (r.time !== slot) continue
-        if (r.notifiedDates.includes(now)) continue
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const d = new Date(now)
+        d.setDate(d.getDate() + dayOffset)
+        const isoDate = toISODate(d)
 
-        await notifications.send({ title: r.title, body: r.time })
-        r.notifiedDates.push(now)
-        changed = true
+        for (const r of list) {
+          if (!isDueOn(r, isoDate)) continue
+          const [h, m] = r.time.split(':').map(Number)
+          const fireAt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0)
+          if (fireAt.getTime() <= now.getTime()) continue
+          items.push({ id: `${r.id}__${isoDate}`, title: r.title, body: r.time, fireAt: fireAt.getTime() })
+        }
       }
 
-      if (changed) {
-        await saveReminders(list)
-      }
-      reminders = list
+      return items
     }
 
-    function startPoller() {
-      pollNotifications()
-      setInterval(pollNotifications, 5 * 60 * 1000)
+    async function scheduleNotifications() {
+      const list = await loadReminders()
+      await notifications.schedule(computeScheduleItems(list))
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────────
     reminders = await loadReminders()
     renderCalendar()
     renderDayPanel()
-    startPoller()
+    await scheduleNotifications()
   </script>
 </body>
 </html>
