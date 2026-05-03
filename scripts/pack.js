@@ -18,5 +18,5 @@ copyFileSync(
 if (!existsSync(outDir)) mkdirSync(outDir)
 if (existsSync(outFile)) unlinkSync(outFile)
 
-execSync(`zip -r "${outFile}" manifest.json sdk/ apps/`, { cwd: root, stdio: 'inherit' })
+execSync(`zip -r "${outFile}" manifest.json icon.svg sdk/ apps/`, { cwd: root, stdio: 'inherit' })
 console.log(`\nBuilt: dist/vessel-reminder.zip`)
