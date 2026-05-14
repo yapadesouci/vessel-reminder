@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr-FR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -130,6 +130,8 @@
       border: 2px solid transparent; transition: border-color 0.15s;
     }
     .swatch.selected { border-color: var(--vs-text); }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -159,7 +161,6 @@
   <div class="day-panel" id="day-panel">
     <div class="day-panel-header">
       <div class="day-panel-title" id="day-panel-title">Select a day</div>
-      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="panel-add">＋ Add reminder</button>
     </div>
     <div id="day-panel-list"></div>
   </div>
@@ -179,7 +180,7 @@
         <div style="display:flex;gap:10px">
           <div class="vs-form-group" style="flex:1">
             <label class="vs-label">Date</label>
-            <input class="vs-input" type="date" id="f-date" />
+            <input class="vs-input" type="text" id="f-date" placeholder="DD/MM/YYYY" maxlength="10" />
           </div>
           <div class="vs-form-group" style="flex:1">
             <label class="vs-label">Time</label>
@@ -236,6 +237,21 @@
     // Returns 'YYYY-MM-DD' for a Date object (local time)
     function toISODate(d) {
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    }
+    // 'YYYY-MM-DD' → 'DD/MM/YYYY'
+    function isoToDMY(iso) {
+      if (!iso) return ''
+      const [y, m, d] = iso.split('-')
+      return `${d}/${m}/${y}`
+    }
+    // 'DD/MM/YYYY' → 'YYYY-MM-DD', or null if invalid
+    function dmyToISO(dmy) {
+      const m = dmy.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+      if (!m) return null
+      const [, d, mo, y] = m
+      const date = new Date(`${y}-${mo}-${d}T00:00:00`)
+      if (isNaN(date)) return null
+      return `${y}-${mo}-${d}`
     }
 
     // Returns true if reminder is due on the given ISO date string
@@ -348,7 +364,7 @@
 
       const d = new Date(selectedDate + 'T00:00:00')
       const isToday = selectedDate === today
-      title.textContent = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) +
+      title.textContent = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) +
         (isToday ? ' — Today' : '')
 
       const due = reminders
@@ -380,7 +396,7 @@
       document.getElementById('modal-title').textContent = reminder ? 'Edit Reminder' : 'New Reminder'
       document.getElementById('f-title').value = reminder?.title ?? ''
       document.getElementById('f-notes').value = reminder?.notes ?? ''
-      document.getElementById('f-date').value = reminder?.date ?? prefillDate
+      document.getElementById('f-date').value = isoToDMY(reminder?.date ?? prefillDate)
       document.getElementById('f-time').value = reminder?.time ?? '09:00'
       document.getElementById('f-recurrence').value = reminder?.recurrence ?? 'none'
 
@@ -393,6 +409,15 @@
       document.getElementById('f-title').focus()
     }
 
+    // Auto-insert slashes while typing DD/MM/YYYY
+    document.getElementById('f-date').addEventListener('input', function (e) {
+      if (e.inputType === 'deleteContentBackward') return
+      let v = this.value.replace(/\D/g, '').slice(0, 8)
+      if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4)
+      else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2)
+      this.value = v
+    })
+
     function closeModal() {
       document.getElementById('modal-overlay').classList.add('hidden')
       editingId = null
@@ -402,15 +427,15 @@
       const title = document.getElementById('f-title').value.trim()
       if (!title) { document.getElementById('f-title').focus(); return }
 
-      const date = document.getElementById('f-date').value
-      if (!date) { document.getElementById('f-date').focus(); return }
+      const dateISO = dmyToISO(document.getElementById('f-date').value)
+      if (!dateISO) { document.getElementById('f-date').focus(); return }
 
       const selectedSwatch = document.querySelector('.swatch.selected')
       const r = {
         id: editingId ?? uuid(),
         title,
         notes: document.getElementById('f-notes').value.trim(),
-        date,
+        date: dateISO,
         time: document.getElementById('f-time').value,
         recurrence: document.getElementById('f-recurrence').value,
         color: selectedSwatch?.dataset.color ?? 'accent',
@@ -457,7 +482,6 @@
     })
 
     document.getElementById('new-reminder').addEventListener('click', () => openModal())
-    document.getElementById('panel-add').addEventListener('click', () => openModal(selectedDate))
 
     document.getElementById('day-panel-list').addEventListener('click', async e => {
       const editId = e.target.dataset.edit
