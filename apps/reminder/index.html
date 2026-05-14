@@ -133,37 +133,35 @@
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="header-left">
-        <button class="nav-btn" id="prev-month">‹</button>
-        <div class="month-title" id="month-title">May 2026</div>
-        <button class="nav-btn" id="next-month">›</button>
-        <button class="today-btn" id="go-today">Today</button>
-      </div>
-      <button class="add-btn" id="new-reminder">＋ New Reminder</button>
+  <div class="header">
+    <div class="header-left">
+      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="prev-month">‹</button>
+      <div class="month-title" id="month-title">May 2026</div>
+      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="next-month">›</button>
+      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="go-today">Today</button>
     </div>
+    <button class="vs-btn vs-btn-primary vs-btn-sm" id="new-reminder">＋ New Reminder</button>
+  </div>
 
-    <div class="calendar">
-      <div class="day-headers">
-        <div class="day-header">Sun</div>
-        <div class="day-header">Mon</div>
-        <div class="day-header">Tue</div>
-        <div class="day-header">Wed</div>
-        <div class="day-header">Thu</div>
-        <div class="day-header">Fri</div>
-        <div class="day-header">Sat</div>
-      </div>
-      <div class="grid" id="calendar-grid"></div>
+  <div class="calendar">
+    <div class="day-headers">
+      <div class="day-header">Sun</div>
+      <div class="day-header">Mon</div>
+      <div class="day-header">Tue</div>
+      <div class="day-header">Wed</div>
+      <div class="day-header">Thu</div>
+      <div class="day-header">Fri</div>
+      <div class="day-header">Sat</div>
     </div>
+    <div class="grid" id="calendar-grid"></div>
+  </div>
 
-    <div class="day-panel" id="day-panel">
-      <div class="day-panel-header">
-        <div class="day-panel-title" id="day-panel-title">Select a day</div>
-        <button class="panel-add-btn" id="panel-add">＋ Add reminder</button>
-      </div>
-      <div id="day-panel-list"></div>
+  <div class="day-panel" id="day-panel">
+    <div class="day-panel-header">
+      <div class="day-panel-title" id="day-panel-title">Select a day</div>
+      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="panel-add">＋ Add reminder</button>
     </div>
+    <div id="day-panel-list"></div>
   </div>
 
   <div class="modal-overlay hidden" id="modal-overlay">
