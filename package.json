@@ -1,5 +1,5 @@
 {
-  "name": "vessel-reminder",
+  "name": "reminder",
   "version": "1.0.1",
   "description": "A Vessel cargo — calendar reminder app",
   "type": "module",
