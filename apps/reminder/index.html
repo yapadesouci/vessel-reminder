@@ -164,50 +164,52 @@
     <div id="day-panel-list"></div>
   </div>
 
-  <div class="modal-overlay hidden" id="modal-overlay">
-    <div class="modal">
-      <h2 id="modal-title">New Reminder</h2>
-      <div class="field">
-        <label>Title</label>
-        <input type="text" id="f-title" placeholder="Reminder title" />
-      </div>
-      <div class="field">
-        <label>Notes</label>
-        <textarea id="f-notes" placeholder="Optional notes"></textarea>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Date</label>
-          <input type="date" id="f-date" />
+  <div class="vs-modal-overlay hidden" id="modal-overlay">
+    <div class="vs-modal">
+      <div class="vs-modal-header" id="modal-title">New Reminder</div>
+      <div class="vs-modal-body">
+        <div class="vs-form-group">
+          <label class="vs-label">Title</label>
+          <input class="vs-input" type="text" id="f-title" placeholder="Reminder title" />
         </div>
-        <div class="field">
-          <label>Time</label>
-          <select id="f-time"></select>
+        <div class="vs-form-group">
+          <label class="vs-label">Notes</label>
+          <textarea class="vs-input" id="f-notes" placeholder="Optional notes"></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div class="vs-form-group" style="flex:1">
+            <label class="vs-label">Date</label>
+            <input class="vs-input" type="date" id="f-date" />
+          </div>
+          <div class="vs-form-group" style="flex:1">
+            <label class="vs-label">Time</label>
+            <select class="vs-select" id="f-time"></select>
+          </div>
+        </div>
+        <div class="vs-form-group">
+          <label class="vs-label">Recurrence</label>
+          <select class="vs-select" id="f-recurrence">
+            <option value="none">Once</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="vs-form-group">
+          <label class="vs-label">Color</label>
+          <div class="swatches" id="swatches">
+            <div class="swatch selected" style="background:var(--vs-accent)"      data-color="accent"></div>
+            <div class="swatch"          style="background:var(--vs-success)"     data-color="success"></div>
+            <div class="swatch"          style="background:var(--vs-warning)"     data-color="warning"></div>
+            <div class="swatch"          style="background:var(--vs-danger)"      data-color="danger"></div>
+            <div class="swatch"          style="background:var(--vs-info)"        data-color="info"></div>
+            <div class="swatch"          style="background:var(--vs-text-muted)"  data-color="muted"></div>
+          </div>
         </div>
       </div>
-      <div class="field">
-        <label>Recurrence</label>
-        <select id="f-recurrence">
-          <option value="none">Once</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Color</label>
-        <div class="swatches" id="swatches">
-          <div class="swatch swatch-sky selected"    data-color="sky"></div>
-          <div class="swatch swatch-green"   data-color="green"></div>
-          <div class="swatch swatch-amber"   data-color="amber"></div>
-          <div class="swatch swatch-orange"  data-color="orange"></div>
-          <div class="swatch swatch-rose"    data-color="rose"></div>
-          <div class="swatch swatch-violet"  data-color="violet"></div>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-cancel" id="modal-cancel">Cancel</button>
-        <button class="btn-save" id="modal-save">Save</button>
+      <div class="vs-modal-footer">
+        <button class="vs-btn vs-btn-ghost" id="modal-cancel">Cancel</button>
+        <button class="vs-btn vs-btn-primary" id="modal-save">Save</button>
       </div>
     </div>
   </div>
