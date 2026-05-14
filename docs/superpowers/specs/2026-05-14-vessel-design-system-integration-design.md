@@ -73,8 +73,6 @@ Replace 6 hardcoded color variants with 6 vessel semantic variants:
 
 Color picker swatches in the modal map to the same 5 semantic colors + muted.
 
-**Legacy color fallback (JS):** Existing stored reminders may have `color` values of `"rose"` or `"orange"` (the old names). The pill-rendering JS must map these to `"danger"` as a fallback so old data doesn't break. This is a small JS change but necessary for correctness — add a `normalizeColor(c)` helper that maps `rose → danger`, `orange → danger`, `violet → info`, `sky → accent`, `green → success`, `amber → warning`, and passes others through unchanged.
-
 ### Reminder rows (day panel)
 - Row background: `--vs-bg-card`, border: `--vs-border`
 - Time: `--vs-text-muted`
@@ -86,11 +84,11 @@ Because `vessel://sdk.js` automatically sets `data-theme` and `data-accent` on `
 
 ## Files Changed
 
-- `apps/reminder/index.html` — CSS rewrite + small JS `normalizeColor()` helper for legacy stored color values
+- `apps/reminder/index.html` — CSS rewrite only; HTML structure and JS unchanged
 
 ## Out of Scope
 
 - Layout changes
 - New features
-- JS logic changes (except `normalizeColor()` helper)
+- JS logic changes
 - Notes field (already exists, no change)
