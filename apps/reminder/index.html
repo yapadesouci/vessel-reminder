@@ -340,7 +340,6 @@
     }
 
     // ── Day panel renderer ────────────────────────────────────────────────────────
-    const BADGE = { daily: 'badge-daily', weekly: 'badge-weekly', monthly: 'badge-monthly', none: 'badge-none' }
     const BADGE_LABEL = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', none: 'Once' }
 
     function renderDayPanel() {
@@ -368,7 +367,7 @@
         row.innerHTML = `
           <div class="r-time">${r.time}</div>
           <div class="r-title" data-edit="${r.id}">${r.title}</div>
-          <div class="r-badge ${BADGE[r.recurrence]}">${BADGE_LABEL[r.recurrence]}</div>
+          <div class="r-badge">${BADGE_LABEL[r.recurrence]}</div>
           <button class="r-delete" data-delete="${r.id}" title="Delete">✕</button>
         `
         list.appendChild(row)
@@ -385,7 +384,7 @@
       document.getElementById('f-time').value = reminder?.time ?? '09:00'
       document.getElementById('f-recurrence').value = reminder?.recurrence ?? 'none'
 
-      const color = reminder?.color ?? 'sky'
+      const color = reminder?.color ?? 'accent'
       document.querySelectorAll('.swatch').forEach(s => {
         s.classList.toggle('selected', s.dataset.color === color)
       })
@@ -414,7 +413,7 @@
         date,
         time: document.getElementById('f-time').value,
         recurrence: document.getElementById('f-recurrence').value,
-        color: selectedSwatch?.dataset.color ?? 'sky',
+        color: selectedSwatch?.dataset.color ?? 'accent',
       }
 
       if (editingId) {
