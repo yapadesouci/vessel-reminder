@@ -6,10 +6,10 @@ import { fileURLToPath } from 'url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = resolve(root, 'dist')
-const outFile = resolve(outDir, 'reminder.zip')
+const outFile = resolve(outDir, 'vessel-reminder.zip')
 
 if (!existsSync(outDir)) mkdirSync(outDir)
 if (existsSync(outFile)) unlinkSync(outFile)
 
 execSync(`zip -r "${outFile}" manifest.json apps/`, { cwd: root, stdio: 'inherit' })
-console.log(`\nBuilt: dist/reminder.zip`)
+console.log(`\nBuilt: dist/vessel-reminder.zip`)

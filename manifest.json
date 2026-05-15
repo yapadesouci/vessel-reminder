@@ -2,9 +2,9 @@
   "id": "reminder",
   "name": "Reminder",
   "version": "1.0.1",
-  "author": "franck.anso@gmail.com",
+  "author": "vessel",
   "description": "A calendar-based reminder app with system notifications",
-"apps": [
+  "apps": [
     {
       "id": "reminder",
       "name": "Reminder",
