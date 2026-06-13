@@ -1,7 +1,8 @@
 {
   "id": "reminder",
   "name": "Reminder",
-  "version": "1.0.1",
+  "icon": "calendar",
+  "version": "1.1.0",
   "author": "vessel",
   "description": "A calendar-based reminder app with system notifications",
   "apps": [

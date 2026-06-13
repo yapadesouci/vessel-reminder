@@ -1,0 +1,76 @@
+/* Reminder — cargo stylesheet.
+   Layout owned by this cargo's author. Inherits all tokens &
+   components from vessel://sdk.css (linked first in index.html). */
+
+/* ════════════════════ REMINDER ════════════════════ */
+.cargo, .app { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.rm-cal { padding: 12px 18px 8px; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.rm-dows { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 6px; border-bottom: 1px solid var(--vs-border); padding-bottom: 6px; }
+.rm-dow { font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--vs-text-faint); padding-left: 3px; }
+.rm-grid { display: grid; grid-template-columns: repeat(7,1fr); grid-auto-rows: 1fr; gap: 1px; background: var(--vs-border); border: 1px solid var(--vs-border); flex: 1; }
+.rm-cell { background: var(--vs-bg); padding: 6px; cursor: pointer; min-height: 0; overflow: hidden; transition: background .1s; }
+.rm-cell:hover { background: var(--vs-bg-soft); }
+.rm-cell.other { background: var(--vs-bg-rail); }
+.rm-cell.other .rm-num { color: var(--vs-text-dim); }
+.rm-cell.sel { background: var(--vs-bg-card); box-shadow: inset 0 0 0 1px var(--vs-accent-line); }
+.rm-num { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--vs-text-muted); margin-bottom: 4px; }
+.rm-cell.today .rm-num { color: var(--vs-accent); }
+.rm-cell.today .rm-num::after { content: ''; }
+.rm-pill { font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: var(--r-xs); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; border-left: 2px solid currentColor; }
+.rm-pill .pd { display: none; }
+.rm-pill.accent  { background: var(--vs-accent-soft);  color: var(--vs-accent); }
+.rm-pill.success { background: var(--vs-success-soft); color: var(--vs-success); }
+.rm-pill.warning { background: var(--vs-warning-soft); color: var(--vs-warning); }
+.rm-pill.danger  { background: var(--vs-danger-soft);  color: var(--vs-danger); }
+.rm-pill.info    { background: var(--vs-info-soft);    color: var(--vs-info); }
+.rm-more { font-family: var(--font-mono); font-size: 9.5px; color: var(--vs-text-faint); padding-left: 3px; }
+.rm-panel { border-top: 1px solid var(--vs-border); background: var(--vs-bg-chrome); padding: 14px 20px 16px; height: 182px; overflow-y: auto; flex-shrink: 0; }
+.rm-panel-title { font-family: var(--font-display); font-size: 13.5px; font-weight: 700; color: var(--vs-text); margin-bottom: 14px; }
+.rm-row { display: flex; align-items: center; gap: 13px; padding: 9px 0; border-bottom: 1px solid var(--vs-border); }
+.rm-row:last-child { border-bottom: none; }
+.rm-time { font-family: var(--font-mono); font-size: 11.5px; color: var(--vs-accent); width: 46px; flex-shrink: 0; }
+.rm-rtitle { font-size: 13.5px; color: var(--vs-text); font-weight: 500; flex: 1; }
+.rm-cdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.rm-empty { font-size: 13px; color: var(--vs-text-faint); padding: 8px 0; }
+
+/* ── New / edit reminder modal ── */
+.rm-modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+.rm-modal {
+  width: 380px; max-width: calc(100vw - 40px);
+  background: var(--vs-bg-card);
+  border: 1px solid var(--vs-border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--vs-shadow-lg);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.rm-modal-title {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  color: var(--vs-text); margin-bottom: 4px;
+}
+.rm-f-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--vs-text-faint); margin-top: 4px;
+}
+.rm-f-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rm-f-grid > div { display: flex; flex-direction: column; gap: 7px; }
+.rm-f-colors { display: flex; gap: 8px; margin-top: 2px; }
+.rm-swatch {
+  width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; padding: 0;
+  background-clip: padding-box;
+}
+.rm-swatch.accent  { background: var(--vs-accent); }
+.rm-swatch.success { background: var(--vs-success); }
+.rm-swatch.warning { background: var(--vs-warning); }
+.rm-swatch.danger  { background: var(--vs-danger); }
+.rm-swatch.info    { background: var(--vs-info); }
+.rm-swatch[data-on='1'] { box-shadow: 0 0 0 2px var(--vs-bg-card), 0 0 0 4px currentColor; }
+.rm-modal-footer {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;
+}

@@ -1,556 +1,77 @@
 <!DOCTYPE html>
-<html lang="fr-FR">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reminder</title>
-  <link rel="stylesheet" href="vessel://sdk.css" />
-  <script src="vessel://sdk.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--vs-border);
-      background: var(--vs-bg-soft);
-      flex-shrink: 0;
-    }
-    .header-left { display: flex; align-items: center; gap: 8px; }
-    .month-title { font-size: 14px; font-weight: 600; color: var(--vs-text); }
-
-    /* ── Calendar grid ── */
-    .calendar { padding: 0 12px 8px; flex-shrink: 0; }
-    .day-headers {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      margin-bottom: 2px;
-    }
-    .day-header {
-      text-align: center;
-      font-size: 10px; font-weight: 600; color: var(--vs-text-faint);
-      letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 8px 0 4px;
-    }
-    .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-
-    .cell {
-      min-height: 76px; padding: 4px;
-      border-radius: 6px; cursor: pointer;
-      transition: background 0.1s;
-    }
-    .cell:hover { background: var(--vs-bg-hover); }
-    .cell.other-month .date-num { color: var(--vs-text-faint); opacity: 0.4; }
-    .cell.today { background: var(--vs-bg-soft); }
-    .cell.selected { background: var(--vs-bg-active); outline: 1px solid var(--vs-border-strong); }
-    .cell.today .date-num { background: var(--vs-accent); color: #fff; font-weight: 700; }
-    .date-num {
-      font-size: 11px; font-weight: 600; color: var(--vs-text-muted);
-      width: 20px; height: 20px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 2px;
-    }
-
-    /* ── Event pills ── */
-    .pill {
-      font-size: 10px; font-weight: 600;
-      padding: 2px 5px; border-radius: 4px; margin-bottom: 2px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      display: flex; align-items: center; gap: 3px;
-    }
-    .pill-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
-
-    .pill-accent  { background: var(--vs-accent-soft);                                    color: var(--vs-accent);      }
-    .pill-success { background: color-mix(in srgb, var(--vs-success) 12%, transparent); color: var(--vs-success);     }
-    .pill-warning { background: color-mix(in srgb, var(--vs-warning) 12%, transparent); color: var(--vs-warning);     }
-    .pill-danger  { background: color-mix(in srgb, var(--vs-danger)  12%, transparent); color: var(--vs-danger);      }
-    .pill-info    { background: color-mix(in srgb, var(--vs-info)    12%, transparent); color: var(--vs-info);        }
-    .pill-muted   { background: var(--vs-bg-active);            color: var(--vs-text-muted);  }
-
-    .pill-accent .pill-dot  { background: var(--vs-accent); }
-    .pill-success .pill-dot { background: var(--vs-success); }
-    .pill-warning .pill-dot { background: var(--vs-warning); }
-    .pill-danger .pill-dot  { background: var(--vs-danger); }
-    .pill-info .pill-dot    { background: var(--vs-info); }
-    .pill-muted .pill-dot   { background: var(--vs-text-faint); }
-
-    .more-link { font-size: 10px; color: var(--vs-text-faint); padding: 1px 4px; }
-
-    /* ── Day panel ── */
-    .day-panel {
-      border-top: 1px solid var(--vs-border);
-      padding: 10px 16px;
-      background: var(--vs-bg-soft);
-      overflow-y: auto; flex: 1; min-height: 0;
-    }
-    .day-panel-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .day-panel-title {
-      font-size: 11px; font-weight: 600; color: var(--vs-text-muted);
-      text-transform: uppercase; letter-spacing: 0.06em;
-    }
-
-    .reminder-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 7px 10px; border-radius: 7px;
-      background: var(--vs-bg-card); border: 1px solid var(--vs-border);
-      margin-bottom: 4px;
-    }
-    .r-time { font-size: 11px; color: var(--vs-text-muted); width: 44px; flex-shrink: 0; font-weight: 600; }
-    .r-title { font-size: 13px; color: var(--vs-text); font-weight: 500; flex: 1; cursor: pointer; }
-    .r-title:hover { color: var(--vs-accent); }
-    .r-badge {
-      font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; flex-shrink: 0;
-      background: var(--vs-bg-active); color: var(--vs-text-muted); border: 1px solid var(--vs-border);
-    }
-    .r-delete {
-      background: none; border: none; color: var(--vs-text-faint); font-size: 13px;
-      cursor: pointer; padding: 2px 4px; line-height: 1; flex-shrink: 0;
-      transition: color 0.1s;
-    }
-    .r-delete:hover { color: var(--vs-danger); }
-
-    .empty-day { color: var(--vs-text-muted); font-size: 12px; padding: 8px 0; }
-
-    /* ── Color swatches ── */
-    .swatches { display: flex; gap: 8px; }
-    .swatch {
-      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: border-color 0.15s;
-    }
-    .swatch.selected { border-color: var(--vs-text); }
-
-    .hidden { display: none !important; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reminder · a Vessel cargo</title>
+<!--
+  REMINDER — a Vessel cargo (author: l. fontaine)
+  The cargo owns its calendar + day panel; app.js renders into the mount
+  points below and persists via vessel.storage. Unity via vessel://sdk.css.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="vessel://sdk.css" />
+<link rel="stylesheet" href="app.css" />
 </head>
 <body>
-  <div class="header">
-    <div class="header-left">
-      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="prev-month">‹</button>
-      <div class="month-title" id="month-title">May 2026</div>
-      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="next-month">›</button>
-      <button class="vs-btn vs-btn-ghost vs-btn-sm" id="go-today">Today</button>
+<div class="cargo">
+  <div class="app">
+    <div class="dd-toolbar">
+      <button class="dd-icon-btn" id="btn-prev" title="Previous month"><svg class="vi" viewBox="0 0 24 24"><use href="#vi-chevron-left"/></svg></button>
+      <span class="dd-toolbar-title" id="month-label" style="min-width: 132px; text-align: center"></span>
+      <button class="dd-icon-btn" id="btn-next" title="Next month"><svg class="vi" viewBox="0 0 24 24"><use href="#vi-chevron-right"/></svg></button>
+      <button class="dd-btn dd-btn-ghost dd-btn-sm" id="btn-today">Today</button>
+      <div class="spacer" style="flex: 1"></div>
+      <button class="dd-btn dd-btn-primary dd-btn-sm" id="btn-new"><svg class="vi" viewBox="0 0 24 24"><use href="#vi-plus"/></svg> New reminder</button>
     </div>
-    <button class="vs-btn vs-btn-primary vs-btn-sm" id="new-reminder">＋ New Reminder</button>
-  </div>
 
-  <div class="calendar">
-    <div class="day-headers">
-      <div class="day-header">Sun</div>
-      <div class="day-header">Mon</div>
-      <div class="day-header">Tue</div>
-      <div class="day-header">Wed</div>
-      <div class="day-header">Thu</div>
-      <div class="day-header">Fri</div>
-      <div class="day-header">Sat</div>
-    </div>
-    <div class="grid" id="calendar-grid"></div>
-  </div>
-
-  <div class="day-panel" id="day-panel">
-    <div class="day-panel-header">
-      <div class="day-panel-title" id="day-panel-title">Select a day</div>
-    </div>
-    <div id="day-panel-list"></div>
-  </div>
-
-  <div class="vs-modal-overlay hidden" id="modal-overlay">
-    <div class="vs-modal">
-      <div class="vs-modal-header" id="modal-title">New Reminder</div>
-      <div class="vs-modal-body">
-        <div class="vs-form-group">
-          <label class="vs-label">Title</label>
-          <input class="vs-input" type="text" id="f-title" placeholder="Reminder title" />
-        </div>
-        <div class="vs-form-group">
-          <label class="vs-label">Notes</label>
-          <textarea class="vs-input" id="f-notes" placeholder="Optional notes"></textarea>
-        </div>
-        <div style="display:flex;gap:10px">
-          <div class="vs-form-group" style="flex:1">
-            <label class="vs-label">Date</label>
-            <input class="vs-input" type="text" id="f-date" placeholder="DD/MM/YYYY" maxlength="10" />
-          </div>
-          <div class="vs-form-group" style="flex:1">
-            <label class="vs-label">Time</label>
-            <select class="vs-select" id="f-time"></select>
-          </div>
-        </div>
-        <div class="vs-form-group">
-          <label class="vs-label">Recurrence</label>
-          <select class="vs-select" id="f-recurrence">
-            <option value="none">Once</option>
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-        </div>
-        <div class="vs-form-group">
-          <label class="vs-label">Color</label>
-          <div class="swatches" id="swatches">
-            <div class="swatch selected" style="background:var(--vs-accent)"      data-color="accent"></div>
-            <div class="swatch"          style="background:var(--vs-success)"     data-color="success"></div>
-            <div class="swatch"          style="background:var(--vs-warning)"     data-color="warning"></div>
-            <div class="swatch"          style="background:var(--vs-danger)"      data-color="danger"></div>
-            <div class="swatch"          style="background:var(--vs-info)"        data-color="info"></div>
-            <div class="swatch"          style="background:var(--vs-text-muted)"  data-color="muted"></div>
-          </div>
-        </div>
+    <div class="rm-cal">
+      <div class="rm-dows">
+        <div class="rm-dow">Sun</div><div class="rm-dow">Mon</div><div class="rm-dow">Tue</div>
+        <div class="rm-dow">Wed</div><div class="rm-dow">Thu</div><div class="rm-dow">Fri</div><div class="rm-dow">Sat</div>
       </div>
-      <div class="vs-modal-footer">
-        <button class="vs-btn vs-btn-ghost" id="modal-cancel">Cancel</button>
-        <button class="vs-btn vs-btn-primary" id="modal-save">Save</button>
+      <div class="rm-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="rm-panel" id="panel"></div>
+  </div>
+</div>
+
+<!-- New / edit reminder modal -->
+<div class="rm-modal-overlay" id="rm-modal" style="display: none">
+  <div class="rm-modal">
+    <div class="rm-modal-title" id="rm-modal-title">New reminder</div>
+    <label class="rm-f-label">Title</label>
+    <input class="dd-input" id="rm-f-title" placeholder="What's the reminder?" />
+    <div class="rm-f-grid">
+      <div>
+        <label class="rm-f-label">Date</label>
+        <input class="dd-input" id="rm-f-date" type="date" />
+      </div>
+      <div>
+        <label class="rm-f-label">Time</label>
+        <input class="dd-input" id="rm-f-time" type="time" value="09:00" />
       </div>
     </div>
+    <label class="rm-f-label">Color</label>
+    <div class="rm-f-colors" id="rm-f-colors">
+      <button type="button" class="rm-swatch accent" data-color="accent" data-on="1"></button>
+      <button type="button" class="rm-swatch success" data-color="success"></button>
+      <button type="button" class="rm-swatch warning" data-color="warning"></button>
+      <button type="button" class="rm-swatch danger" data-color="danger"></button>
+      <button type="button" class="rm-swatch info" data-color="info"></button>
+    </div>
+    <div class="rm-modal-footer">
+      <button class="dd-btn dd-btn-ghost dd-btn-sm" id="rm-f-cancel">Cancel</button>
+      <button class="dd-btn dd-btn-primary dd-btn-sm" id="rm-f-save">Add reminder</button>
+    </div>
   </div>
+</div>
 
-  <script type="module">
-    const { ready, storage, notifications } = vessel
-    await ready()
-
-    // ── Storage ──────────────────────────────────────────────────────────────────
-    async function loadReminders() {
-      return (await storage.get('reminders')) ?? []
-    }
-    async function saveReminders(list) {
-      await storage.set('reminders', list)
-    }
-
-    // ── Utilities ─────────────────────────────────────────────────────────────────
-    function uuid() {
-      return crypto.randomUUID?.() ??
-        ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16))
-    }
-
-    // Returns 'YYYY-MM-DD' for a Date object (local time)
-    function toISODate(d) {
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    }
-    // 'YYYY-MM-DD' → 'DD/MM/YYYY'
-    function isoToDMY(iso) {
-      if (!iso) return ''
-      const [y, m, d] = iso.split('-')
-      return `${d}/${m}/${y}`
-    }
-    // 'DD/MM/YYYY' → 'YYYY-MM-DD', or null if invalid
-    function dmyToISO(dmy) {
-      const m = dmy.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
-      if (!m) return null
-      const [, d, mo, y] = m
-      const date = new Date(`${y}-${mo}-${d}T00:00:00`)
-      if (isNaN(date)) return null
-      return `${y}-${mo}-${d}`
-    }
-
-    // Returns true if reminder is due on the given ISO date string
-    function isDueOn(r, isoDate) {
-      if (r.date > isoDate) return false
-      if (r.recurrence === 'none')    return r.date === isoDate
-      if (r.recurrence === 'daily')   return true
-      if (r.recurrence === 'weekly') {
-        const base = new Date(r.date + 'T00:00:00')
-        const target = new Date(isoDate + 'T00:00:00')
-        return base.getDay() === target.getDay()
-      }
-      if (r.recurrence === 'monthly') {
-        return r.date.slice(8) === isoDate.slice(8)   // same day-of-month
-      }
-      return false
-    }
-
-    // Populate 5-min time options in the <select>
-    function populateTimeSelect() {
-      const sel = document.getElementById('f-time')
-      for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 5) {
-          const v = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
-          const opt = document.createElement('option')
-          opt.value = v
-          opt.textContent = v
-          sel.appendChild(opt)
-        }
-      }
-    }
-    populateTimeSelect()
-
-    // ── State ─────────────────────────────────────────────────────────────────────
-    let reminders = []
-    const today = toISODate(new Date())
-    let viewYear = new Date().getFullYear()
-    let viewMonth = new Date().getMonth()   // 0-indexed
-    let selectedDate = today
-    let editingId = null
-
-    // ── Calendar renderer ─────────────────────────────────────────────────────────
-    const MONTHS = ['January','February','March','April','May','June',
-                    'July','August','September','October','November','December']
-
-    function renderCalendar() {
-      document.getElementById('month-title').textContent =
-        `${MONTHS[viewMonth]} ${viewYear}`
-
-      const grid = document.getElementById('calendar-grid')
-      grid.innerHTML = ''
-
-      const firstDay = new Date(viewYear, viewMonth, 1).getDay()
-      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
-      const daysInPrev = new Date(viewYear, viewMonth, 0).getDate()
-
-      const cells = []
-
-      for (let i = firstDay - 1; i >= 0; i--) {
-        const d = new Date(viewYear, viewMonth - 1, daysInPrev - i)
-        cells.push({ date: toISODate(d), otherMonth: true })
-      }
-      for (let d = 1; d <= daysInMonth; d++) {
-        cells.push({ date: toISODate(new Date(viewYear, viewMonth, d)), otherMonth: false })
-      }
-      let trailing = 1
-      while (cells.length < 42) {
-        const d = new Date(viewYear, viewMonth + 1, trailing++)
-        cells.push({ date: toISODate(d), otherMonth: true })
-      }
-
-      for (const { date, otherMonth } of cells) {
-        const cell = document.createElement('div')
-        cell.className = 'cell' +
-          (otherMonth ? ' other-month' : '') +
-          (date === today ? ' today' : '') +
-          (date === selectedDate ? ' selected' : '')
-        cell.dataset.date = date
-
-        const dayNum = document.createElement('div')
-        dayNum.className = 'date-num'
-        dayNum.textContent = Number(date.slice(8))
-        cell.appendChild(dayNum)
-
-        const due = reminders.filter(r => isDueOn(r, date))
-        const visible = due.slice(0, 2)
-        for (const r of visible) {
-          const pill = document.createElement('div')
-          pill.className = `pill pill-${r.color}`
-          pill.innerHTML = `<div class="pill-dot"></div>${r.title}`
-          cell.appendChild(pill)
-        }
-        if (due.length > 2) {
-          const more = document.createElement('div')
-          more.className = 'more-link'
-          more.textContent = `+${due.length - 2} more`
-          cell.appendChild(more)
-        }
-
-        grid.appendChild(cell)
-      }
-    }
-
-    // ── Day panel renderer ────────────────────────────────────────────────────────
-    const BADGE_LABEL = { daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', none: 'Once' }
-
-    function renderDayPanel() {
-      const title = document.getElementById('day-panel-title')
-      const list = document.getElementById('day-panel-list')
-
-      const d = new Date(selectedDate + 'T00:00:00')
-      const isToday = selectedDate === today
-      title.textContent = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) +
-        (isToday ? ' — Today' : '')
-
-      const due = reminders
-        .filter(r => isDueOn(r, selectedDate))
-        .sort((a, b) => a.time.localeCompare(b.time))
-
-      list.innerHTML = ''
-      if (!due.length) {
-        list.innerHTML = '<div class="empty-day">No reminders for this day.</div>'
-        return
-      }
-
-      for (const r of due) {
-        const row = document.createElement('div')
-        row.className = 'reminder-row'
-        row.innerHTML = `
-          <div class="r-time">${r.time}</div>
-          <div class="r-title" data-edit="${r.id}">${r.title}</div>
-          <div class="r-badge">${BADGE_LABEL[r.recurrence]}</div>
-          <button class="r-delete" data-delete="${r.id}" title="Delete">✕</button>
-        `
-        list.appendChild(row)
-      }
-    }
-
-    // ── Modal ─────────────────────────────────────────────────────────────────────
-    function openModal(prefillDate = selectedDate, reminder = null) {
-      editingId = reminder?.id ?? null
-      document.getElementById('modal-title').textContent = reminder ? 'Edit Reminder' : 'New Reminder'
-      document.getElementById('f-title').value = reminder?.title ?? ''
-      document.getElementById('f-notes').value = reminder?.notes ?? ''
-      document.getElementById('f-date').value = isoToDMY(reminder?.date ?? prefillDate)
-      document.getElementById('f-time').value = reminder?.time ?? '09:00'
-      document.getElementById('f-recurrence').value = reminder?.recurrence ?? 'none'
-
-      const color = reminder?.color ?? 'accent'
-      document.querySelectorAll('.swatch').forEach(s => {
-        s.classList.toggle('selected', s.dataset.color === color)
-      })
-
-      document.getElementById('modal-overlay').classList.remove('hidden')
-      document.getElementById('f-title').focus()
-    }
-
-    // Auto-insert slashes while typing DD/MM/YYYY
-    document.getElementById('f-date').addEventListener('input', function (e) {
-      if (e.inputType === 'deleteContentBackward') return
-      let v = this.value.replace(/\D/g, '').slice(0, 8)
-      if (v.length >= 5) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4)
-      else if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2)
-      this.value = v
-    })
-
-    function closeModal() {
-      document.getElementById('modal-overlay').classList.add('hidden')
-      editingId = null
-    }
-
-    async function saveModal() {
-      const title = document.getElementById('f-title').value.trim()
-      if (!title) { document.getElementById('f-title').focus(); return }
-
-      const dateISO = dmyToISO(document.getElementById('f-date').value)
-      if (!dateISO) { document.getElementById('f-date').focus(); return }
-
-      const selectedSwatch = document.querySelector('.swatch.selected')
-      const r = {
-        id: editingId ?? uuid(),
-        title,
-        notes: document.getElementById('f-notes').value.trim(),
-        date: dateISO,
-        time: document.getElementById('f-time').value,
-        recurrence: document.getElementById('f-recurrence').value,
-        color: selectedSwatch?.dataset.color ?? 'accent',
-      }
-
-      if (editingId) {
-        reminders = reminders.map(x => x.id === editingId ? r : x)
-      } else {
-        reminders.push(r)
-      }
-
-      await saveReminders(reminders)
-      await scheduleNotifications()
-      closeModal()
-      renderCalendar()
-      renderDayPanel()
-    }
-
-    // ── Event handlers ────────────────────────────────────────────────────────────
-    document.getElementById('calendar-grid').addEventListener('click', e => {
-      const cell = e.target.closest('.cell')
-      if (!cell) return
-      selectedDate = cell.dataset.date
-      renderCalendar()
-      renderDayPanel()
-    })
-
-    document.getElementById('prev-month').addEventListener('click', () => {
-      viewMonth--
-      if (viewMonth < 0) { viewMonth = 11; viewYear-- }
-      renderCalendar()
-    })
-    document.getElementById('next-month').addEventListener('click', () => {
-      viewMonth++
-      if (viewMonth > 11) { viewMonth = 0; viewYear++ }
-      renderCalendar()
-    })
-    document.getElementById('go-today').addEventListener('click', () => {
-      viewYear = new Date().getFullYear()
-      viewMonth = new Date().getMonth()
-      selectedDate = today
-      renderCalendar()
-      renderDayPanel()
-    })
-
-    document.getElementById('new-reminder').addEventListener('click', () => openModal())
-
-    document.getElementById('day-panel-list').addEventListener('click', async e => {
-      const editId = e.target.dataset.edit
-      const deleteId = e.target.dataset.delete
-
-      if (editId) {
-        const r = reminders.find(x => x.id === editId)
-        if (r) openModal(selectedDate, r)
-      }
-      if (deleteId) {
-        reminders = reminders.filter(x => x.id !== deleteId)
-        await saveReminders(reminders)
-        await scheduleNotifications()
-        renderCalendar()
-        renderDayPanel()
-      }
-    })
-
-    document.getElementById('modal-save').addEventListener('click', saveModal)
-    document.getElementById('modal-cancel').addEventListener('click', closeModal)
-    document.getElementById('modal-overlay').addEventListener('click', e => {
-      if (e.target === e.currentTarget) closeModal()
-    })
-
-    document.getElementById('swatches').addEventListener('click', e => {
-      const swatch = e.target.closest('.swatch')
-      if (!swatch) return
-      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'))
-      swatch.classList.add('selected')
-    })
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal()
-    })
-
-    // ── Notification scheduler ────────────────────────────────────────────────────
-    // Computes upcoming fire timestamps for all reminders within the next 7 days
-    // and registers them with the main process (Node.js timers, not throttled).
-    function computeScheduleItems(list) {
-      const items = []
-      const now = new Date()
-
-      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-        const d = new Date(now)
-        d.setDate(d.getDate() + dayOffset)
-        const isoDate = toISODate(d)
-
-        for (const r of list) {
-          if (!isDueOn(r, isoDate)) continue
-          const [h, m] = r.time.split(':').map(Number)
-          const fireAt = new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0)
-          if (fireAt.getTime() <= now.getTime()) continue
-          items.push({ id: `${r.id}__${isoDate}`, title: r.title, body: r.time, fireAt: fireAt.getTime() })
-        }
-      }
-
-      return items
-    }
-
-    async function scheduleNotifications() {
-      const list = await loadReminders()
-      await notifications.schedule(computeScheduleItems(list))
-    }
-
-    // ── Init ──────────────────────────────────────────────────────────────────────
-    reminders = await loadReminders()
-    renderCalendar()
-    renderDayPanel()
-    await scheduleNotifications()
-  </script>
+<script src="vessel://sdk-icons.js"></script>
+<script src="vessel://sdk.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
