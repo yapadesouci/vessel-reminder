@@ -1,6 +1,7 @@
 {
   "name": "reminder",
-  "version": "1.1.0",
+  "icon": "calendar",
+  "version": "1.1.1",
   "description": "A Vessel cargo — calendar reminder app",
   "type": "module",
   "private": true,
